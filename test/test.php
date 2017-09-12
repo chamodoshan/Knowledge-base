@@ -3,26 +3,40 @@ include 'connection.php';
 if (isset($_POST['ask'])) {
 $ques=$_POST["ques"];
 
-	$sql ="SELECT*FROM faq";
-	$result=$conn->query($sql);
-		while($row= $result->fetch_assoc()){
-			if($row['Question']==$ques){
-				echo "Answer:".$row['Answer'];
-			} else {
-				echo "invalide !!!";
-			}
+	$sql ="SELECT * FROM test
+        WHERE MATCH (question,answer)
+        AGAINST  ("" IN NATURAL LANGUAGE MODE)";
 
-			if ($row['Keywords']== ) {
-				# code...
-			}
+        //echo $sql;
+
+	$result=$conn->query($sql);
+
+	//var_dump($result);
+
+	while ($row = $result->fetch_assoc()) {
+			echo "id".$row["q_id"]. "Q :- " .$row["question"] . "A :-" . $row["answer"]. "<br>";
 		}
 
-	/*$sql2 = "SELECT*FROM faq WHERE Question LIKE '%+ques+%'";
-	$result2=$conn->query($sql2);
-		while($row= $result2->fetch_assoc()){
-				echo "Answer:".$row['Answer'];
-		}*/
+	//while($row= $result->fetch_assoc()){
+		//if($row['question']==$ques){
+		//	echo "".$row['answer'];
+		//} 
+		echo $result;
+	//}	
+$words = explode(" ", $ques);
 
+	
+	/*$sql2 ="SELECT*FROM keyword";
+	$result2=$conn->query($sql2);
+	while($row= $result2->fetch_assoc()){
+		for ($i=0; $i <sizeof($words) ; $i++) { 
+			if($row['Keyword']==$words[$i]){
+				$q = $row['k_id'];
+				echo $q;
+			}
+		}
+		
+	}*/
 }
 ?>
 
