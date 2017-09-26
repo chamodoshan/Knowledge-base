@@ -15,9 +15,6 @@
 <script>
     function myselect(word)
     {
-    	/*var str_esc = escape(word);
-		var res = unescape(str_esc);*/
-		//word.replace(/&nbsp/g, ' ');
         document.getElementById("ques").value = word.replace(/space/gi," ");
     }
 </script>
@@ -66,10 +63,9 @@ class Keywords
 	public $qIdW = [];
 	public $kIdW = [];
 	public $removeDup_kIdW = [];
-	//public $weights = [] [];
 	public function __construct($ques){
 		$this->words = explode(" ", $this->removeCommonWords($ques));
-		//var_dump($this->words);
+		$this->words =array_filter($this->words);
 		$connection =new connection;
 		$this->cc = $connection->check();	
 		$this->que = $ques;
@@ -84,15 +80,8 @@ class Keywords
 	public function CheckKeyword(){
 		while ($row = $this->result->fetch_assoc()) {
 				array_push($this->num, $row['k_id']);
-				echo $row['keyword'];
-				echo "-------------------------------------";
-				echo "</br>";
 		}
-		/*if ($count0==1) {
-		 	echo "Be more specific !!!";
-		 } else {*/
 		 	return $this->num;
-		 //}
 		
 	}
 
@@ -104,8 +93,6 @@ class Keywords
 			foreach ($num_array as $kId) {
 				if ($row['k_id']==$kId) {
 					array_push($this->qId, $row['q_id']);
-					//array_push($this->weights, $row['weight'])
-					//echo $this->num;
 				}
 			}
 			
@@ -138,12 +125,13 @@ class Keywords
 						}
 					}
 					$this->removeDup_kIdW = array_unique($this->kIdW);
-					for ($j=0; $j < sizeof($this->removeDup_kIdW) ; $j++) { 
-						$sql = "SELECT k_id, keyword FROM keyword WHERE (k_id LIKE '%{$this->removeDup_kIdW[$j]}%')";
+					//var_dump($this->removeDup_kIdW);
+					for ($j=0; $j < sizeof($this->kIdW) ; $j++) { 
+						$sql = "SELECT k_id, keyword FROM keyword WHERE (k_id LIKE '%{$this->kIdW[$j]}%') AND (k_id NOT LIKE '%{$this->num[0]}%')";
 						$this->result = $this->cc->query($sql);
 						while ($row = $this->result->fetch_assoc()) {
 							$key = $row['keyword'];
-							echo $key;
+							//echo $key;
 							echo "</br>";
 							echo"<td width=14% align=center><input type=button value=$key onclick=myselect('$key'+'space'+'$test') /></td>";
 						}
@@ -151,29 +139,10 @@ class Keywords
 				}else {
 					echo $row['answer'];
 				}
-				//echo "--".$row['q_Id']."--";
-			//	echo $row['question'];
 			}
 		}
 
 	}
-
-	/*public function weight(){
-		$weights = [] ;
-		$id = $this->QuestionId();
-		$sql = "SELECT * FROM weight";
-		$result = $this->cc->query($sql);
-		while ($row = $result->fetch_assoc()) {
-			$we=$row['weight'];
-			foreach ($id as $ida) {
-				if ($row['q_id'] == $ida) {
-					$total=$we*$ida;
-					array_push($weights, $total);
-				}
-			}
-		}
-		return $weights;
-	}*/
 
 
 	public function removeCommonWords($input){
@@ -191,70 +160,11 @@ class Keywords
 }
 if (isset($_POST['ques'])) {
 $obj1 = new Keywords($_POST['ques']);
-//$obj1->Question();
 $obj1->Question();
-/*foreach ($obj1->weight() as $key) {
-	echo $key;
-}*/
-/*echo "<br>";
-foreach ($obj1->QuestionId() as $key) {
-	echo $key;
-}*/
 
 }
-
-/**
-* 
-*/
-/*class weights extends Keywords
-{
-	function array(){
-		$sql = "SELECT * FROM weight";
-		$result = $this->cc->query($sql);
-		$num_array = $Keywords->CheckKeyword();
-		while ($row = $result->fetch_assoc()) {
-			foreach ($num_array as $kId) {
-				if ($row['k_id']==$kId) {
-					$array = array(array($row['q_id'], $row['weight']));
-					//array_push($this->qId, $row['q_id']);
-					//array_push($this->weights, $row['weight'])
-					//echo $this->num;
-				}
-			}
-			
-		}
-		return $array;
-	}
-
-	function max(){
-		$max = -9999999; //will hold max val
-		$found_item = null; //will hold item with max val;
-		$arr = $this->array();
-		foreach($arr as $k=>$v)
-		{
-			for ($i=0; $i < sizeof($v) ; $i++) { 
-
-				if($v[$i]>$max){
-
-       			$max = $v[$i];
-       			$found_item = $v;
-    		}
-			}
-   		
-		}
-
-		echo "max value is".$max."<br>";
-		print_r($found_item); 
-	}
-}
-
-$obj2 = new weights();
-$obj2->max();*/
 
 ?>
-
-
-
 
 
 
