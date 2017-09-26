@@ -154,17 +154,50 @@ class Keywords
  
 	return preg_replace('/\b('.implode('|',$commonWords).')\b/','',$input2);
 
-}
+	}
 
+	public function frequency(){
+		$sql_co = "SELECT COUNT (k_id) FROM keyword";
+		$result_co = $this->cc->query($sql_co);
+		for ($i=1; $i <10; $i++) {
+			$count = 0;
+			$sql_f= "SELECT q_id, k_id FROM weight WHERE (k_id LIKE '%{$i}%')";
+			$result_f= $this->cc->query($sql_f);
+			while ($row = $result_f->fetch_assoc()) {
+				$count = $count + 1;
+			}
+			echo $count;
+			$sql = "UPDATE keyword SET frequency = $count WHERE k_id = $i";
+			if ($this->cc->query($sql) === TRUE) {
+      			echo "New record created successfully";
+    		} else {
+      			echo "Error: " . $sql . "<br>" . $this->cc->error;
+    		}
+		
+		}
+	}
 
+	public function weights(){
+		$sql_ordered = "SELECT * FROM keyword ORDER BY frequency DESC";
+		$result_ordered = $this->cc->query($sql_ordered);
+		while ($row = $result_f->fetch_assoc()) {
+			
+		}
+	}
 }
 if (isset($_POST['ques'])) {
 $obj1 = new Keywords($_POST['ques']);
 $obj1->Question();
+$obj1->frequency();
 
 }
 
+//$this->cc->close();
 ?>
+
+
+
+
 
 
 
