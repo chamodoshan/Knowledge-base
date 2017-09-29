@@ -16,6 +16,7 @@
     function myselect(word)
     {
         document.getElementById("ques").value = word.replace(/space/gi," ");
+        //document.getElementById("ques").value = word;
     }
 </script>
 
@@ -27,7 +28,7 @@ include 'connection.php';
 /**
 * 
 */
-class DataReader
+/*class DataReader
 {
 	public $que, $result;
 	public function __construct($ques){
@@ -50,11 +51,13 @@ class DataReader
 if (isset($_POST['ques'])) {
 $obj = new DataReader($_POST['ques']);
 $obj->display();
-}
+}*/
 
 /**
 * 
 */
+//$q_frequency = 0;
+
 class Keywords 
 {
 	public $que, $result, $words, $cc;
@@ -63,9 +66,15 @@ class Keywords
 	public $qIdW = [];
 	public $kIdW = [];
 	public $removeDup_kIdW = [];
+	public $frequency = [];
+	public $non_frequency = [];
+	public $q_id_fre;
+	//global $q_frequency;
 	public function __construct($ques){
 		$this->words = explode(" ", $this->removeCommonWords($ques));
 		$this->words =array_filter($this->words);
+		$this->words =array_values($this->words);
+		//var_dump($this->words);
 		$connection =new connection;
 		$this->cc = $connection->check();	
 		$this->que = $ques;
@@ -132,11 +141,32 @@ class Keywords
 						while ($row = $this->result->fetch_assoc()) {
 							$key = $row['keyword'];
 							//echo $key;
+							//echo "</br>";
+							//echo"<td width=14% align=center><input type=button value=$key onclick=myselect('$key'+'space'+'$test') /></td>";
+						}
+					}
+					echo "</br>";
+					echo "Did you mean : -";
+					for ($k=0; $k < sizeof($this->qIdW) ; $k++) { 
+						$sql = "SELECT q_Id, question FROM qanda WHERE (q_Id LIKE '%{$this->qIdW[$k]}%')";
+						$this->result = $this->cc->query($sql);
+						while ($row = $this->result->fetch_assoc()) {
+							$key = $row['question'];
+							//echo $key;
+							$word = explode(" ", $key);
+
 							echo "</br>";
-							echo"<td width=14% align=center><input type=button value=$key onclick=myselect('$key'+'space'+'$test') /></td>";
+							echo"<td width=14% align=center><input type=button value='$key' onclick=myselect('$word[0]'+'space'+'$word[1]'+'space'+'$word[2]'+'space'+'$word[3]'+'space'+'$word[4]'+'space'+'$word[5]'+'space'+'$word[6]') /></td>";
 						}
 					}
 				}else {
+					//$this->q_frequency = $this->q_frequency+1;
+					$this->q_id_fre = $row['q_Id'];
+					$sql = "UPDATE qanda SET frequency = frequency+1  WHERE q_Id = $this->q_id_fre";
+					if ($this->cc->query($sql) === TRUE) {
+      					//echo "New record created successfully";
+    				}	
+
 					echo $row['answer'];
 				}
 			}
@@ -166,10 +196,9 @@ class Keywords
 			while ($row = $result_f->fetch_assoc()) {
 				$count = $count + 1;
 			}
-			echo $count;
 			$sql = "UPDATE keyword SET frequency = $count WHERE k_id = $i";
 			if ($this->cc->query($sql) === TRUE) {
-      			echo "New record created successfully";
+      			//echo "New record created successfully";
     		} else {
       			echo "Error: " . $sql . "<br>" . $this->cc->error;
     		}
@@ -180,24 +209,46 @@ class Keywords
 	public function weights(){
 		$sql_ordered = "SELECT * FROM keyword ORDER BY frequency DESC";
 		$result_ordered = $this->cc->query($sql_ordered);
-		while ($row = $result_f->fetch_assoc()) {
-			
+		while ($row = $result_ordered->fetch_assoc()) {
+			if ($row['frequency'] >1) {
+				array_push($this->frequency, $row['k_id']);
+			} else{
+				array_push($this->non_frequency, $row['k_id']);
+			}
 		}
+
+		$sql_select = "SELECT * FROM weight WHERE (k_id LIKE '%{$this->frequency[0]}%')";
+		$result_select = $this->cc->query($sql_select);
+		while ($row = $result_select->fetch_assoc()) {
+			$num1 = $row['q_id'];
+		}
+
+	}
+
+	public function frequency_question(){
+
+	
+			//$num = $num +1;
+			$sql = "UPDATE qanda SET frequency = $this->q_frequency WHERE q_Id = $this->q_id_fre";
+			if ($this->cc->query($sql) === TRUE) {
+      			//echo "New record created successfully";
+    		} else {
+      			echo "Error: " . $sql . "<br>" . $this->cc->error;
+    		}	
+		
 	}
 }
 if (isset($_POST['ques'])) {
 $obj1 = new Keywords($_POST['ques']);
 $obj1->Question();
 $obj1->frequency();
+$obj1->weights();
+//$obj1->frequency_question();
 
 }
 
 //$this->cc->close();
 ?>
-
-
-
-
 
 
 
